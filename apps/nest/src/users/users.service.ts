@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SearchUserDto } from './dto/search-user-dto';
+import { PrismaService } from 'prisma/prisma.service';
+import * as argon2 from 'argon2';
 
 type User = {
   id: number;
@@ -10,67 +12,24 @@ type User = {
 };
 @Injectable()
 export class UsersService {
-  // ユーザデータの配列
-  users: User[] = [
-    { id: 1, name: 'Taro', age: 25 },
-    { id: 2, name: 'Hanako', age: 30 },
-    { id: 3, name: 'Jiro', age: 22 },
-  ];
-  create(createUserDto: CreateUserDto) {
-    const nextId =
-      this.users.length > 0
-        ? Math.max(...this.users.map((user) => user.id)) + 1
-        : 1;
-
-    const newUser: User = {
-      id: nextId, // 動的に計算したIDを設定
-      name: createUserDto.name,
-      age: createUserDto.age,
-    };
-
-    this.users.push(newUser);
-    return newUser;
+  constructor(private readonly prismaService: PrismaService) {}
+  async create(createUserDto: CreateUserDto) {
+    const hashedPassword = await argon2.hash(createUserDto.password);
+    return this.prismaService.user.create({
+      data: {
+        email: createUserDto.email,
+        name: createUserDto.name,
+        age: createUserDto.age,
+        hashedPassword: hashedPassword,
+      },
+    });
   }
 
-  findAll(searchUserDto: SearchUserDto) {
-    if (!searchUserDto.name) {
-      return this.users;
-    }
-    // keywordがnameに含まれているユーザのみをフィルタリング
-    const filteredUsers = this.users.filter((user) =>
-      user.name.includes(searchUserDto.name),
-    );
-    return filteredUsers;
-  }
+  findAll(searchUserDto: SearchUserDto) {}
 
-  findOne(id: number) {
-    // 条件に一致する最初のユーザを返す
-    const user = this.users.find((user) => user.id === id);
-    return user;
-  }
+  findOne(id: number) {}
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    const userToUpdate = this.users.find((user) => user.id === id);
-    if (!userToUpdate) {
-      // throw new NotFoundException('指定したidのユーザは存在しません');
-      return null;
-    }
-    if (updateUserDto.age) {
-      userToUpdate.age = updateUserDto.age;
-    }
-    if (updateUserDto.name) {
-      userToUpdate.name = updateUserDto.name;
-    }
-    return userToUpdate;
-  }
+  update(id: number, updateUserDto: UpdateUserDto) {}
 
-  remove(id: number) {
-    const userDelete = this.users.find((user) => user.id === id);
-    if (!userDelete) {
-      // throw new NotFoundException('指定したidのユーザは存在しません');
-      return null;
-    }
-    this.users = this.users.filter((user) => user.id !== id);
-    return userDelete;
-  }
+  remove(id: number) {}
 }

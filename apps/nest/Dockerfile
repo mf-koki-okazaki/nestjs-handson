@@ -9,7 +9,7 @@ RUN yarn
 
 COPY . .
 
-# まだschema.prismaにモデルがないためコメントアウトしておく。
-# RUN npx prisma generate
+
+RUN yarn prisma generate
 
 ENTRYPOINT ["yarn", "run", "start:dev"]
