@@ -63,7 +63,6 @@ export class UsersService {
     if (updateData.password) {
       updateData.password = await argon2.hash(updateData.password);
     }
-
     try {
       return await this.prisma.user.update({
         where: { id },
@@ -72,6 +71,11 @@ export class UsersService {
     } catch (error: any) {
       if (error.code === 'P2025') {
         throw new NotFoundException(`User with id ${id} not found`);
+      }
+      if (error.code === 'P2002') {
+        throw new ConflictException(
+          '指定されたメールアドレスは既に使用されています。',
+        );
       }
       throw new InternalServerErrorException(
         'ユーザ更新時に予期せぬエラーが発生しました。',
