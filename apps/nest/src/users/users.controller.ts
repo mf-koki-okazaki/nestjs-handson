@@ -1,19 +1,20 @@
+//users.controller.ts
 import {
   Controller,
   Get,
   Post,
   Body,
-  // Patch,
+  Patch,
   Param,
   Delete,
   Query,
-  Put,
+  // Put,
   // HttpCode,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { SearchUserDto } from './dto/search-user-dto';
+import { SearchUserDto } from './dto/search-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -34,7 +35,7 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
-  @Put(':id')
+  @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
   }
